@@ -1,0 +1,719 @@
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>ArcGIS Server Map</title>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.23/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.23/"></script>
+
+    <!-- Sunny Ngrok 内网穿透访问 -->
+    <!-- <link rel="stylesheet" href="http://wong.free.idcfengye.com/arcgis_js_v423_api/arcgis_js_api/javascript/4.23/esri/themes/light/main.css" /> -->
+    <!-- <script src="http://wong.free.idcfengye.com/arcgis_js_v423_api/arcgis_js_api/javascript/4.23/init.js"></script> -->
+
+    <!-- <link rel="stylesheet" href="http://localhost:8088/arcgis_js_v423_api/arcgis_js_api/javascript/4.23/esri/themes/light/main.css" /> -->
+    <!-- <script src="http://localhost:8088/arcgis_js_v423_api/arcgis_js_api/javascript/4.23/init.js"></script> -->
+
+    <!-- 本地址访问 -->
+    <!-- <link rel="stylesheet" href="http://localhost:8088/arcgis_js_v423_api/arcgis_js_api/javascript/4.23/esri/themes/light/main.css" /> -->
+    <!-- <script src="http://localhost:8088/arcgis_js_v423_api/arcgis_js_api/javascript/4.23/init.js"></script> -->
+
+    
+    <!-- <link rel="stylesheet" href="E:/Air14FileData/DFiles/SeniorYear/SystemMap_SourceCode/ArcGIS_Server_Map/arcgis_js_v423_api/arcgis_js_api/javascript/4.23/esri/themes/light/main.css"/> -->
+    <!-- <script src="E:/Air14FileData/DFiles/SeniorYear/SystemMap_SourceCode/ArcGIS_Server_Map/arcgis_js_v423_api/arcgis_js_api/javascript/4.23/init.js"></script> -->
+
+    <script>
+        require([
+            "esri/widgets/Sketch",
+            "esri/Map",
+            "esri/Graphic",
+            "esri/layers/GraphicsLayer",
+            "esri/rest/route",
+            "esri/rest/support/RouteParameters",
+            "esri/rest/support/FeatureSet",
+            "esri/views/MapView",
+            "esri/layers/FeatureLayer",
+            "esri/views/SceneView",
+            "esri/WebMap",
+            "esri/WebScene",
+            "esri/widgets/DistanceMeasurement2D",
+            "esri/widgets/AreaMeasurement2D",
+            "esri/widgets/Expand",
+            "esri/core/reactiveUtils",
+            "esri/widgets/FeatureTable",
+            "esri/widgets/Search",
+            "esri/widgets/LayerList",
+        ], function (
+            Sketch,
+            Map,
+            Graphic,
+            GraphicsLayer,
+            route,
+            RouteParameters,
+            FeatureSet,
+            MapView,
+            FeatureLayer,
+            SceneView,
+            WebMap,
+            WebScene,
+            DistanceMeasurement2D,
+            AreaMeasurement2D,
+            Expand,
+            reactiveUtils,
+            FeatureTable,
+            LayerList,
+            Search,
+        ) {
+            const apiKey = "AAPKec5e7aae3d6241c9b83417e4a1f8ee21EMkj1hcFCF2_9p3hi6MN_k5jkiq_fzMv_hLfpU85MGFJEp7sHV-ODgWcnD-YM43n";
+
+            // FeatureTable
+            const features = [];
+
+            /********************
+            * Add feature layer
+            ********************/
+            // Create the PopupTemplate单击弹出信息气泡框
+            const popupTemplate = {
+                // autocasts as new PopupTemplate()
+                title: "地域名称：{NAME}{区县}",
+                content: [
+                    {
+                        type: "fields",
+                        fieldInfos: [
+                            {
+                                fieldName: "Kind",
+                                // label: "Kind",//弹窗显示的标签
+                                // format: {
+                                //     places: 0,
+                                //     digitSeparator: true
+                                // }
+                            },
+                            {
+                                fieldName: "name",
+                                label: "名字：",
+                                // format: {
+                                //     places: 0,
+                                //     digitSeparator: true
+                                // }
+                            },
+                            {
+                                fieldName: "区县",
+                                label: "区县：",
+                            },
+                            {
+                                fieldName: "派出所",
+                                label: "名称：",
+                            },
+                            {
+                                fieldName: "地址",
+                                label: "具体地址：",
+                            },
+                            {
+                                fieldName: "联系电",
+                                label: "联系电话：",
+                            },
+                            {
+                                fieldName: "经度",
+                                label: "经度：",
+                            },
+                            {
+                                fieldName: "纬度",
+                                label: "纬度：",
+                            },
+
+                        ]
+                    }
+                ]
+            };
+            // Create the FeatureLayer using the popupTemplate添加自己发布的要素图层
+            const featureLayer1 = new FeatureLayer({
+                url:"http://192.168.0.107:6080/arcgis/rest/services/PoliceStationsInHarbinCityMap/MapServer/2",//家的访问地址
+                // url:"http://541331e14b.51vip.biz:2006/arcgis/rest/services/ThePoliceStationInHarbinCitymapColor/MapServer/1",
+                // url: "http://541331e14b.51vip.biz:2005/arcgis/rest/services/ThePoliceStationInHarbinCitymap/MapServer/1",
+                // outFields: ["NAME", "GEOID"], // used by queryFeatures
+                popupTemplate: popupTemplate
+            });
+            const featureLayer2 = new FeatureLayer({
+                url:"http://192.168.0.107:6080/arcgis/rest/services/PoliceStationsInHarbinCityMap/MapServer/1",//家的访问地址
+                // url:"http://541331e14b.51vip.biz:2006/arcgis/rest/services/ThePoliceStationInHarbinCitymapColor/MapServer/0",//校园网WT访问地址
+                // url:"https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World",
+                // url: "http://541331e14b.51vip.biz:2005/arcgis/rest/services/ThePoliceStationInHarbinCitymap/MapServer/0",
+                // outFields: ["NAME", "GEOID"], // used by queryFeatures
+                popupTemplate: popupTemplate
+            });
+            // map.add(featureLayer2);            // map.add(featureLayer1);
+
+
+            //=================================================路径
+            // Point the URL to a valid routing service
+            const routeUrl = "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World";
+            // The stops and route result will be stored in this layer
+            const routeLayer = new GraphicsLayer();
+            routeLayer.title = "The Shortest Path Layter"; //显示图层姓名
+            // Setup the route parameters
+            const routeParams = new RouteParameters({
+                // An authorization string used to access the routing service
+                apiKey: apiKey,
+                stops: new FeatureSet(),
+                outSpatialReference: {
+                    // autocasts as new SpatialReference()
+                    wkid: 3857
+                }
+            });
+            // Define the symbology used to display the stops
+            const stopSymbol = {
+                type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+                style: "cross",
+                size: 15,
+                outline: {
+                    // autocasts as new SimpleLineSymbol()
+                    width: 1
+                }
+            };
+            // Define the symbology used to display the route
+            const routeSymbol = {
+                type: "simple-line", // autocasts as SimpleLineSymbol()
+                color: [0, 0, 255, 0.5],
+                width: 2
+            };
+            //=================================================路径
+
+            var activeWidget = null;//测量窗口
+            const graphicsLayer = new GraphicsLayer();//绘图
+            graphicsLayer.title = "Sketch Layer";   //显示图层姓名
+            //二维视图
+            const map = new Map({
+                basemap: "streets-navigation-vector",
+                // basemap: "satellite",
+                layers: [featureLayer1, featureLayer2, graphicsLayer, routeLayer],
+                //
+                //
+            });
+
+            const view = new MapView({
+                container: "viewDiv",
+                map: map,
+                center: [127.63, 45.7],
+                zoom: 5,
+                popup: {
+                    autoOpenEnabled: true
+                } //disable popups
+            });
+
+            //========================================================表
+            view.when(() => {
+                const featureLayer = map.layers.getItemAt(1); //grabs the first layer in the map
+                featureLayer.title = "Basic information about the city's police stations in Harbin";//显示图层姓名
+
+                // Create the feature table
+                const featureTable = new FeatureTable({
+                    view: view, // required for feature highlight to work
+                    layer: featureLayer,
+                    visibleElements: { // autocast to VisibleElements
+                        menuItems: {
+                            clearSelection: true,
+                            refreshData: true,
+                            toggleColumns: true,
+                            selectedRecordsShowAllToggle: true,
+                            selectedRecordsShowSelectedToggle: true,
+                            zoomToSelection: false
+                        }
+                    },
+                    // autocast to FieldColumnConfigs
+                    fieldConfigs: [
+
+                        {
+                            name: "Kind",
+                            // direction: "asc"
+                        },
+                        {
+                            name: "name",
+                            label: "名字：",
+                            // direction: "asc"  
+                        },
+                        {
+                            name: "区县",
+                            label: "区县：",
+                        },
+                        {
+                            name: "派出所",
+                            label: "名称：",
+                        },
+                        {
+                            name: "地址",
+                            label: "具体地址：",
+                        },
+                        {
+                            name: "联系电",
+                            label: "联系电话：",
+                        },
+                        {
+                            name: "经度",
+                            label: "经度：",
+                        },
+                        {
+                            name: "纬度",
+                            label: "纬度：",
+                        },
+                    ],
+                    container: document.getElementById("tableDiv")
+                });
+
+                // Listen for when the view is updated. If so, pass the new view.extent into the table's filterGeometry
+                featureLayer.watch("loaded", () => {
+                    reactiveUtils.when(
+                        () => view.updating === false,
+                        () => {
+                            // Get the new extent of view/map whenever map is updated.
+                            if (view.extent) {
+                                // Filter out and show only the visible features in the feature table
+                                featureTable.filterGeometry = view.extent;
+
+                                // Listen for the table's selection-change event
+                                featureTable.on("selection-change", (changes) => {
+                                    console.log(changes);
+                                });
+                            }
+                        }
+                    );
+                });
+
+                // Listen for the table's selection-change event
+                featureTable.on("selection-change", (changes) => {
+                    // If the selection is removed, remove the feature from the array
+                    changes.removed.forEach((item) => {
+                        const data = features.find((data) => {
+                            return data.feature === item.feature;
+                        });
+                        if (data) {
+                            features.splice(features.indexOf(data), 1);
+                        }
+                    });
+
+                    // If the selection is added, push all added selections to array
+                    changes.added.forEach((item) => {
+                        const feature = item.feature;
+                        features.push({
+                            feature: feature
+                        });
+                    });
+                });
+
+                // Listen for the click on the view and select any associated row in the table
+                view.on("immediate-click", (event) => {
+                    view.hitTest(event).then((response) => {
+                        const candidate = response.results.find((result) => {
+                            return (
+                                result.graphic &&
+                                result.graphic.layer &&
+                                result.graphic.layer === featureLayer
+                            );
+                        });
+                        // Select the rows of the clicked feature
+                        candidate && featureTable.selectRows(candidate.graphic);
+                    });
+                });
+            });
+            //=================================================表
+
+            //=================================================路径
+            // Adds a graphic when the user clicks the map. If 2 or more points exist, route is solved.
+            const routeButton = document.getElementById("route-btn");
+            routeButton.addEventListener("click", () => {
+                if (routeButton.value == "打开最短路径") {
+                    routeButton.value = "关闭最短路径";
+                    // routeLayer.removeMany(stopSymbol, routeSymbol);//删除路径点、线元素
+                    routeLayer.removeAll();
+                    routeParams.stops.features.length = 0;//删除路径点元素
+                    // routeParams.stops.features.length = [];
+
+                }
+                else {
+                    routeButton.value = "打开最短路径";
+                    openRoute();
+                }
+            });
+
+            function openRoute() {
+                function addStop(event) {
+                    // Add a point at the location of the map click
+                    const stop = new Graphic({  //路径标点
+                        geometry: event.mapPoint,
+                        symbol: stopSymbol
+                    });
+                    if (routeButton.value == "打开最短路径") {
+                        routeLayer.add(stop);
+
+                        // Execute the route if 2 or more stops are input
+                        routeParams.stops.features.push(stop);
+                        if (routeParams.stops.features.length >= 2) {
+                            route.solve(routeUrl, routeParams).then(showRoute);
+                        }
+                    }
+
+                }
+                // Adds the solved route to the map as a graphic
+                function showRoute(data) {
+                    const routeResult = data.routeResults[0].route;
+                    routeResult.symbol = routeSymbol;
+                    routeLayer.add(routeResult);
+                }
+                view.on("double-click", addStop);
+            }
+
+
+            //=================================================路径
+
+
+            //测量
+            //======================================================================================
+            // add the toolbar for the measurement widgets
+            view.ui.add("topbar", "top-right");
+
+            document.getElementById("distanceButton").addEventListener("click", function () {
+                setActiveWidget(null);
+                if (!this.classList.contains("active")) {
+                    setActiveWidget("distance");
+                } else {
+                    setActiveButton(null);
+                }
+            });
+
+            document.getElementById("areaButton").addEventListener("click", function () {
+                setActiveWidget(null);
+                if (!this.classList.contains("active")) {
+                    setActiveWidget("area");
+                } else {
+                    setActiveButton(null);
+                }
+            });
+
+            function setActiveWidget(type) {
+                switch (type) {
+                    case "distance":
+                        activeWidget = new DistanceMeasurement2D({
+                            view: view
+                        });
+
+                        // skip the initial 'new measurement' button
+                        activeWidget.viewModel.start();
+
+                        view.ui.add(activeWidget, "top-right");
+                        setActiveButton(document.getElementById("distanceButton"));
+                        break;
+                    case "area":
+                        activeWidget = new AreaMeasurement2D({
+                            view: view
+                        });
+
+                        // skip the initial 'new measurement' button
+                        activeWidget.viewModel.start();
+
+                        view.ui.add(activeWidget, "top-right");
+                        setActiveButton(document.getElementById("areaButton"));
+                        break;
+                    case null:
+                        if (activeWidget) {
+                            view.ui.remove(activeWidget);
+                            activeWidget.destroy();
+                            activeWidget = null;
+                        }
+                        break;
+                }
+            }
+
+            function setActiveButton(selectedButton) {
+                // focus the view to activate keyboard shortcuts for sketching
+                view.focus();
+                var elements = document.getElementsByClassName("active");
+                for (var i = 0; i < elements.length; i++) {
+                    elements[i].classList.remove("active");
+                }
+                if (selectedButton) {
+                    selectedButton.classList.add("active");
+                }
+            }
+
+            //========================================================================================
+
+
+            // // // Add the scene to a SceneView
+            // const Sceneview = new SceneView({
+            //     container: "sceneDiv",
+            //     map: map, //改变视图 3D
+            //     // Indicates to create a local scene
+            //     // viewingMode: "local",
+            //     // Use the extent defined in clippingArea to define the bounds of the scene
+            //     // clippingArea: kansasExtent
+            // });
+
+            // view.popup.autoOpenEnabled = false;双击弹出经纬度气泡框
+            view.on("double-click", (event) => {
+                // Get the coordinates of the click on the view
+                // around the decimals to 3 decimals
+                const lat = Math.round(event.mapPoint.latitude * 1000) / 1000;
+                const lon = Math.round(event.mapPoint.longitude * 1000) / 1000;
+
+                view.popup.open({
+                    // Set the popup's title to the coordinates of the clicked location
+                    title: "[经度：" + lon + ", 纬度：" + lat + "]",
+                    location: event.mapPoint // Set the location of the popup to the clicked location
+                });
+            });
+
+
+            // 添加图层列表
+            const layerList = new LayerList({
+                view: view
+            });
+            //为图层列表添加折叠微件
+            const layListExpand = new Expand({
+                view: view,
+                content: layerList,
+                expanded: false
+            });
+            view.ui.add(layListExpand, "top-right");
+
+
+            //测量扩展框
+            const measuExpand = new Expand({
+                view: view,
+                content: topbar,
+            });
+            // Add the expand instance to the ui
+            view.ui.add(measuExpand, "top-right");
+
+            // 添加搜索控件
+            const searchWidget = new Search({
+                view: view
+            });
+            const SwExpand = new Expand({
+                view: view,
+                content: searchWidget,
+                expanded: false
+            });
+            view.ui.add(SwExpand, "top-right");
+
+
+
+            //绘图功能
+            view.when(() => {
+                const sketch = new Sketch({
+                    layer: graphicsLayer,
+                    view: view,
+                    // graphic will be selected as soon as it is created
+                    creationMode: "update"
+                });
+                // view.ui.add(sketch, "top-right");
+
+                //扩展框
+                const sketchExpand = new Expand({
+                    view: view,
+                    content: sketch,
+                });
+
+                // Add the expand instance to the ui
+                view.ui.add(sketchExpand, "top-right");
+            });
+
+            //鹰眼三维视图
+            const view1 = new SceneView({//同步的三维小地图视图
+                container: "sceneviewDiv",
+                map: map
+            });
+
+            // const view2 = new MapView({
+            //     container: "view2Div",
+            //     map: map,
+            //     constraints: {
+            //         // Disable zoom snapping to get the best synchronization
+            //         snapToZoom: false
+            //     }
+            // });
+
+            const views = [view1, view];
+            let active;
+
+            const sync = (source) => {
+                if (!active || !active.viewpoint || active !== source) {
+                    return;
+                }
+
+                for (const view of views) {
+                    if (view !== active) {
+                        view.viewpoint = active.viewpoint;
+                    }
+                }
+            };
+
+
+            for (const view of views) {
+                view.watch(["interacting", "animation"], () => {
+                    active = view;
+                    sync(active);
+                });
+
+                view.watch("viewpoint", () => sync(view));
+            }
+            //================================================================
+
+
+            //2D、3D转换视图监听事件==========================================================================
+            //三维视图（2D、3D转换视图干扰Sketch绘图功能）
+            //===============================================================================================
+
+
+
+        });
+    </script>
+    <style>
+        .top {
+            height: 10%;
+            width: 100%;
+
+        }
+
+        #topContainer {
+            height: 10%;
+            width: 100%;
+            background-color: rgb(167, 170, 173);
+        }
+    </style>
+    <style>
+        html,
+        body,
+        .main {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        #Main-container {
+            width: 100%;
+            height: 100%;
+        }
+
+        #viewDiv {
+            height: 100%;
+            width: 100%;
+
+        }
+
+        #sceneviewDiv {
+            top: 66%;
+            height: 35%;
+            width: 20%;
+            float: left;
+        }
+
+        /* Class分组悬浮 */
+        .WebMap {
+            position: absolute;
+            /* z-index: 100; */
+
+        }
+
+        .WebScene {
+            position: absolute;
+        }
+
+        /* 二维三维视图转换 */
+        #infoDiv {
+            position: absolute;
+            top: 15px;
+            left: 60px;
+        }
+
+        #infoDiv input {
+            border: none;
+            box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 2px;
+        }
+
+        /* 测量 */
+        #topbar {
+            background: #fff;
+            padding: 10px;
+        }
+
+        .action-button {
+            font-size: 16px;
+            background-color: transparent;
+            border: 1px solid #d3d3d3;
+            color: #6e6e6e;
+            height: 32px;
+            width: 32px;
+            text-align: center;
+            box-shadow: 0 0 1px rgba(0, 0, 0, 0.3);
+        }
+
+        .action-button:hover,
+        .action-button:focus {
+            background: #0079c1;
+            color: #e4e4e4;
+        }
+
+        .active {
+            background: #0079c1;
+            color: #e4e4e4;
+        }
+
+        /* FeatureTable */
+        .container {
+            height: 50%;
+            width: 100%;
+            /* position: relative; */
+        }
+
+        #route-btn {
+            height: 32px;
+            width: 128px;
+        }
+
+        /* #tableDiv { 
+} */
+
+        #footer {
+            height: 10px;
+            background-color: #364760;
+            line-height: 8px;
+            color: #ffffff;
+            text-align: center;
+            font-size: 6;
+            padding-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <div id="tableDiv"></div> -->
+
+    <!-- <div id="topContainer" class="top"> -->
+    <!-- 标题框 -->
+
+    </div>
+    <div id="Main-container" class="main">
+
+        <div id="viewDiv" class="WebMap"></div>
+        <div id="sceneviewDiv" class="WebScene"></div>
+
+        <!-- 二维三维视图转换 -->
+        <div id="infoDiv">
+            <input class="esri-component esri-widget--button esri-widget esri-interactive" type="button" id="route-btn"
+                value="关闭最短路径" />
+        </div>
+        <!-- 测量 -->
+        <div id="topbar">
+            <button class="action-button esri-icon-measure-line" id="distanceButton" type="button"
+                title="Measure distance between two or more points"></button>
+            <button class="action-button esri-icon-measure-area" id="areaButton" type="button"
+                title="Measure area"></button>
+        </div>
+    </div>
+    <div class="container">
+        <div id="tableDiv"></div>
+    </div>
+    <div id="footer">南京大学金陵学院 2019级地理信息科学专业 &copy; 版权所有</div>
+</body>
+
+</html>
