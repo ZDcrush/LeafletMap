@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>leftPage</title>
+    <link rel="shortcut icon" type="image/x-icon" href="image/map.png">
+    <style>
+        html,
+        body {
+            width: 98%;
+            height: 100%;
+            background-color: #BBBBBB;
+        }
+
+        .list {
+            /* 横向排列*/
+            float: left;
+            /* 列表无样式 */
+            list-style-type: none;
+
+        }
+
+        #navigation {
+            width: 100%;
+            height: 100%;
+            /* div居中显示 */
+            display: flex;
+            justify-content: center;
+            /* 水平居中 */
+            /* align-items: center; */
+
+
+        }
+
+        #navigation li {
+            margin: 0;
+            padding: 0;
+            float: left;
+            /* 控制总字体 */
+            font-size: 16px;
+        }
+
+        #navigation li a {
+            /* height: auto; */
+            /* width: auto; */
+            background-color: #BBBBBB;
+            /* 控制一级菜单左右间隙 */
+            padding-left: 30px;
+            padding-right: 30px;
+            text-decoration: none;
+            color: black;
+            display: block
+        }
+
+        #navigation li a:hover {
+            background-color: #eee;
+        }
+
+        /* 总览菜单 */
+        #develpomentsite {
+            font-size: 12px;
+            /* background-color: #BBBBBB; */
+        }
+
+        #develpomentsite:hover {
+            background-color: #eee;
+        }
+
+        /* 开发官网的子菜单 */
+        #sitelist {
+            margin: 0;
+            padding: 0;
+            /* 悬浮弹出框 */
+            position: absolute;
+            z-index: 500;
+            /* 横向排列 */
+            float: left;
+            /* 隐藏列表显示 */
+            display: none;
+            /* 列表无样式 */
+            list-style-type: none;
+        }
+
+        /* #sitelist li {} */
+
+        #sitelist li a {
+            background-color: #BBBBBB;
+            /* 左右间隙 */
+            padding-left: 10px;
+            padding-right: 10px;
+            text-decoration: none;
+            font-size: 12px;
+            color: black;
+            display: block
+        }
+
+        #sitelist li a:hover {
+            background-color: #eee;
+        }
+
+        /* 更多功能的子菜单 */
+        #submenu {
+            margin: 0;
+            padding: 0;
+            position: absolute;
+            z-index: 500;
+            display: none;
+
+        }
+
+        #submenu li {
+            font-size: 20px;
+
+        }
+
+        #submenu li a {
+            background-color: #BBBBBB;
+            /* padding: 12px 12px 12px 12px; */
+            /* 左右调节间隙 */
+            padding-left: 10px;
+            padding-right: 10px;
+            text-decoration: none;
+            font-size: 12px;
+            color: black;
+
+        }
+
+        #submenu li a:hover {
+            background-color: #eee;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="navigation">
+        <li class="list" onmouseover="show1()" onmouseout="hide1()"><a href="http://wjb.qyb.link/">开发官网</a>
+            <ul id="sitelist" onmouseover="show1()" onmouseout="hide1()">
+                <li class="list"><a href="https://leafletjs.com/" target="right">Leaflet</a></li>
+                <li class="list"><a href="https://esri.github.io/esri-leaflet/" target="right">Esri Leaflet</a></li>
+                <li class="list"><a href="https://developers.arcgis.com/javascript" target="right">ArcGIS Developer</a>
+                </li>
+                <li class="list"><a href="https://echarts.apache.org/zh/index.html" target="right">Apache ECharts</a>
+                </li>
+            </ul>
+        </li>
+        <li class="list"><a href="Leaflet_Map/EsriLeafletMap.html" target="right">Leaflet Map</a></li>
+        <li class="list"><a href="Esri _Leaflet_Map/EsriLeafletMap.html" target="right">Esri Leaflet Map</a></li>
+        <li class="list"><a href="ArcGIS_Server_Map/ArcGISServerMap.html" target="right">ArcGIS Server Map</a></li>
+        <li class="list"><a href="" target="right">Echarts</a></li>
+        <li class="list"><a href="" target="right" onmouseover="show()" onmouseout="hide()">更多功能待开发中......</a>
+            <ul class="list" id="submenu" onmouseover="show()" onmouseout="hide()">
+                <li><a href="2019040700037@jlxy.nju.edu.cn" target="right">Email邮箱:2019040700037@jlxy.nju.edu.cn</a></li>
+                <li><a href="mailto:programb@foxmail.com?subject=联系我;body=告诉我们你对网页设计的想法?" target="right">发送邮件</a></li>
+                <li><a href="https://leafletjs.com/" target="right">联系电话：13236506601</a></li>
+            </ul>
+        </li>
+        <li class="list"><a href="" target="right">敬请期待！</a></li>
+        <ul id="MapMenu" class="list">
+
+        </ul>
+    </div>
+</body>
+<script>
+    function show() {
+        document.getElementById("submenu").style.display = "block";
+    }
+    function hide() {
+        document.getElementById("submenu").style.display = "none";
+    }
+    function show1() {
+        document.getElementById("sitelist").style.display = "block";
+    }
+    function hide1() {
+        document.getElementById("sitelist").style.display = "none";
+    }
+</script>
+
+</html>

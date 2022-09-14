@@ -1,0 +1,94 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>topPage</title>
+    <style type="text/css">
+        #header {
+            
+            text-align: center;
+            font-size: x-large;
+            height: 49px;
+            margin: 0px;
+            padding-top: 10px;
+            background-color: #4169E1;
+            /* border-bottom: solid 1px #ea5c24; */
+        }
+
+        #header img {
+            margin-left: 50px;
+            margin-top: 5px;
+        }
+
+        #info {
+            background-color:#87CEFA ;
+            height: 35px;
+            line-height: 35px;
+            /* background-image: url(images/info%E8%83%8C%E6%99%AF.png) */
+            
+        }
+
+        .infoWarning {
+            font-size: 8px;
+            color: #ea5c24;
+            margin-left: 50px;
+        }
+
+        .infoContent {
+            font-size: 8px;
+            color: #7f8ba2;
+        }
+
+        .infoDate {
+            float: right;
+            margin-right: 20px;
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <div id="header">哈尔滨市全市派出所基本信息地图服务查询系统</div>
+    <div id="info">
+        <span class="infoWarning">提醒：</span>
+        <span class="infoContent">Leaflet Map和Esri Leaflet Map访问速度相对较快, ArcGIS Server Map加载相对缓慢, 一般情况下建议优先使用前两种地图服务！</span>
+        <span id="displayDate" class="infoDate"></span>
+    </div>
+</body>
+<script type="text/javascript">
+//defind data
+
+var timmerID = null;
+//更新显示当前时间
+function UpdateShowDate() {
+    var weeklyName = "星期天,星期一,星期二,星期三,星期四,星期五,星期六";
+    var WNArray = weeklyName.split(",");
+    var nowDate = new Date();
+    var year = nowDate.getFullYear();
+    var month = nowDate.getMonth() + 1;
+    var day = nowDate.getDate();
+    var week = nowDate.getDay();
+    var hour = nowDate.getHours();
+    var minutes = nowDate.getMinutes();
+    var seconds = nowDate.getSeconds();
+    // console.log(year + '年 ' + month + '月 ' + day + '日 ' + WNArray[week] + hour + minutes + seconds);
+    var ID_infoDate = document.getElementById("displayDate");
+    ID_infoDate.innerText = year + '年 ' + month + '月' + day + '日 ' + WNArray[week] + " " + hour + ":" + minutes + ":" + seconds;
+}
+//启动计时器
+function DateStar() {
+    timmerID = window.setInterval("UpdateShowDate()", 1000);
+}
+//停止计时器
+function DateStop() {
+    window.clearInterval(timmerID);
+}
+UpdateShowDate();
+DateStar();
+
+</script>
+
+</html>

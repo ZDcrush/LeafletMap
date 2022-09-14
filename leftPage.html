@@ -1,0 +1,143 @@
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>leftPage</title>
+    <link rel="shortcut icon" type="image/x-icon" href="image/map.png">
+    <style>
+        #box {
+            /* 20px */
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-bottom: 1px;
+            /* margin: 0px 0px 0px 2px; */
+            background-color: #6495ED;
+        }
+
+        #menu{
+            /* margin-top: 5px; */
+            font-family:'KaiTi';
+        }
+        #develpoment{
+            /* font-size: 12; */
+            font-family: 'SimSun';
+            padding: 5px 0px 0px 5px; 
+            margin-bottom:5px ;
+        }
+
+        #site {
+            /* font-size: px; */
+            margin-bottom: 8px;
+            /* 距离搜索框 */
+            background-color: #BBBBBB;
+            /* border-radius: 2px; */
+        }
+        #siteUl{
+            list-style-type: none;
+            padding: 0;
+            /* margin-left: 0px; */
+            /* 选中效果填满 */
+            margin-left: 10px;
+        }
+
+        #siteUl li a {
+
+            background-color: #BBBBBB;
+            /* 选中效果的背景框 */
+            padding: 2px 2px 2px 2px;
+            margin: 0px;
+            /* 下划线 */
+            text-decoration: none;
+            font-size: 8px;
+            color: black;
+            display: block;
+            /* display:contents; */
+            
+        }
+
+        #siteUl li a:hover {
+            background-color: #eee;
+        }
+
+        /* 搜索框 */
+        #mySearch {
+            width: 100%;
+            font-size: 18px;
+            padding: 11px;
+            border: 1px solid #ddd;
+            border-radius: 2px;
+        }
+
+        #myMenu {
+            list-style-type: none;
+            padding: 0;
+            margin-left: 2px;
+        }
+
+
+        #myMenu li a {
+            background-color: #BBBBBB;
+            padding: 12px 12px 12px 12px;
+            margin: 0px;
+            text-decoration: none;
+            font-size: 14px;
+            color: black;
+            display: block
+        }
+
+        #myMenu li a:hover {
+            background-color: #eee;
+        }
+    </style>
+</head>
+<!-- #BBBBBB bgcolor=#FFFFFF-->
+
+<body>
+    <div id="box">
+        <h3 id="menu">菜单</h3>
+        <div id="site">
+            <h6 id="develpoment">开发官网</h6>
+            <ul id="siteUl">
+                <li><a href="https://leafletjs.com/" target="right">Leaflet</a></li>
+                <li><a href="https://esri.github.io/esri-leaflet/" target="right">Esri Leaflet</a></li>
+                <li><a href="https://developers.arcgis.com/javascript" target="right">ArcGIS Developer</a></li>
+                <li><a href="https://echarts.apache.org/zh/index.html" target="right">Apache ECharts</a></li>
+            </ul>
+        </div>
+        <input type="text" id="mySearch" onkeyup="myFunction()" placeholder="搜索.." title="输入分类">
+        <ul id="myMenu">
+            <li><a href="Leaflet_Map/EsriLeafletMap.html" target="right">Leaflet Map</a></li>
+            <li><a href="Esri _Leaflet_Map/EsriLeafletMap.html" target="right">Esri Leaflet Map</a></li>
+            <li><a href="ArcGIS_Server_Map/ArcGISServerMap.html" target="right">ArcGIS Server Map</a></li>
+            <li><a href="" target="right">Echarts</a></li>
+            <li><a href="" target="right">更多功能待开发中......</a></li>
+            <li><a href="" target="right">敬请期待！</a></li>
+        </ul>
+    </div>
+</body>
+<script type="text/javascript">
+    function myFunction() {
+        var input, filter, ul, li, a, i;
+        // 获得输入内容
+        input = document.getElementById("mySearch");
+        // 把输入的字母全部更改为大写
+        filter = input.value.toUpperCase();
+        // 获得导航菜单
+        ul = document.getElementById("myMenu");
+        // 根据标签名称获得 li 标签
+        li = ul.getElementsByTagName("li");
+        // 遍历搜索分类
+        for (i = 0; i < li.length; i++) {
+            // 在li 标签的基础上根据标签名称获得 a 标签
+            a = li[i].getElementsByTagName("a")[0];
+            // 导航 a 标签中的字符串是否包含 filter 子串
+            if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                li[i].style.display = "";
+            } else {
+                li[i].style.display = "none";
+            }
+        }
+    }
+</script>
+
+</html>
