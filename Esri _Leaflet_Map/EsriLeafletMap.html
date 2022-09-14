@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Esri Leaflet Map</title>
+    <!-- @@@@@加载Leaflet文件 -->
+    <link rel="stylesheet" href="leaflet/leaflet.css" />
+    <script src="leaflet/leaflet.js"></script>
+    <!-- @@@@@加载轻量型jQuery文件 -->
+    <script src="jquery-3.2.1.min.js"></script>
+
+    <!-- @@@@@加载移动鼠标获得经纬度的文件== -->
+    <link rel="dist/L.Control.MousePosition.css" />
+    <script src="dist/L.Control.MousePosition.js"></script>
+
+    <!-- @@@@@加载点击获得经纬度的文件== -->
+    <link rel="stylesheet" href="src/leaflet-locationpicker.css" />
+    <script src="src/leaflet-locationpicker.js"></script>
+
+    <!-- Load Esri Leaflet from CDN -->
+    <script src="esri-leaflet-v3.0.8/esri-leaflet.js"></script>
+    <script src="esri-leaflet-v3.0.8/esri-leaflet-vector.js"></script>
+
+    <!--@@@@@加载画图控件文件-->
+    <link rel="stylesheet" href="dist/leaflet-geoman.css" />
+    <script src="dist/leaflet-geoman.min.js"></script>
+
+    <!-- Load Esri Leaflet Geocoder from CDN 加载搜索地点控件引用-->
+    <link rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder@^3.0.0/dist/esri-leaflet-geocoder.css" />
+    <script src=" https://unpkg.com/esri-leaflet-geocoder@^3.0.0/dist/esri-leaflet-geocoder.js"></script>
+
+    <!-- Load ArcGIS REST JS from CDN -->
+    <script src="https://unpkg.com/@esri/arcgis-rest-request@4.0.0/dist/bundled/request.umd.js"></script>
+    <script src="https://unpkg.com/@esri/arcgis-rest-routing@4.0.0/dist/bundled/routing.umd.js"></script>
+
+    <!-- <script src="dist/echarts-gl.min.js"></script> 加载有错误 -->
+
+    <!-- @@@@@网页样式表 -->
+    <style>
+        html,
+        body {
+            font-family: Arial, Verdana;
+            background-color: #eef1ef;
+            font-size: 16px;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+
+        .wrapper {
+            width: 100%;
+            height: 98%;
+        }
+
+        #ArcGISmapContainer {
+            /* height: 70%;
+            width: 49%;
+            margin-top: 0.5%;
+            float: left; */
+            height: 98%;
+            width: 100%;
+
+        }
+        #echart-footer {
+            width: 100%;
+            height: 2%;
+            /* margin: 0% 0% 0% 0%; */
+            /* 上右下左 */
+            float: left;
+            background-color: #364760;
+        }
+    </style>
+    <style>
+        #SearchPath {
+            background: #eef1ef;
+        }
+
+        #Path-btn {
+            /* background-image: url(image/Path.png); */
+            position: absolute;
+            background: #eff1f0;
+            height: 32px;
+            width: 85px;
+            z-index: 500;
+            top: 50px;
+            right: 12px;
+            border-radius: 5px;   
+            /* text-align: center; */
+        }
+
+        /* 最短路径 */
+        #directions {
+            position: absolute;
+            z-index: 500;
+            width: 20%;
+            max-height: 15%;
+            right: 12px;
+            top: 85px;
+            overflow-y: auto;
+            /* Show a scrollbar if needed */
+            background: white;
+            font-family: Arial, Helvetica, Verdana;
+            line-height: 1.5;
+            font-size: 8px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        #ServerArea-btn {
+            position: absolute;
+            background: #eff1f0;
+            height: 32px;
+            width: 120px;
+            z-index: 500;
+            top: 225px;
+            right: 12px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+
+        <div id="ArcGISmapContainer"></div>
+        <div id="SearchPath">
+            <input type="button" id="Path-btn" value="" onclick="SearchRoutePath();">
+        </div>
+        <div id="SearchServerArea">
+            <input type="button" id="ServerArea-btn" value="" onclick="ServerArea();">
+        </div>
+    </div>
+
+    <div id="echart-footer"></div>
+    </div>
+
+   <!-- ==ArcGISMap== -->
+    <!-- <script src="js/EsriLeaflet_Switchingbasemap.js">
+    //选择多种基础图层（地图定义在了EsriLeaflet_Switchingbasemap.js文件中）
+    //画图控件添加其中</script> -->
+    <script>
+        //加入发布的图层
+        const statesCity = L.esri.featureLayer({
+            url:"http://192.168.0.107:6080/arcgis/rest/services/ThePoliceStationInHarbinCitymapColor/MapServer/1",
+            // url:"http://541331e14b.51vip.biz:2006/arcgis/rest/services/ThePoliceStationInHarbinCitymapColor/MapServer/2",
+            // url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer/3",
+            // url: "http://541331e14b.51vip.biz:2005/arcgis/rest/services/ThePoliceStationInHarbinCitymap/MapServer/2",
+
+            style: function (feature) {
+                return { color: "#000000", weight: 2 };//加载的图层样式控制
+            }
+        });
+        const statesCounty = L.esri.featureLayer({
+            url:"http://192.168.0.107:6080/arcgis/rest/services/ThePoliceStationInHarbinCitymapColor/MapServer/1",
+            // url:"http://541331e14b.51vip.biz:2006/arcgis/rest/services/ThePoliceStationInHarbinCitymapColor/MapServer/1",
+            // url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer/2",
+            // url: "http://541331e14b.51vip.biz:2005/arcgis/rest/services/ThePoliceStationInHarbinCitymap/MapServer/1",
+
+            style: function (feature) {
+                return { color: "#808080", weight: 2 };//加载的图层样式控制
+            }
+        });
+        const statesPoint = L.esri.featureLayer({
+            url:"http://192.168.0.107:6080/arcgis/rest/services/PoliceStationsInHarbinCityMap/MapServer/0",
+        //    url:"http://192.168.0.107:6080/arcgis/rest/services/ThePoliceStationInHarbinCitymapColor/MapServer/0", //家的访问地址
+            // url:"http://541331e14b.51vip.biz:2006/arcgis/rest/services/ThePoliceStationInHarbinCitymapColor/MapServer/0",//校园网WT访问地址
+            // url: "https://sampleserver6.arcgisonline.com/arcgis/rest/services/Census/MapServer/3",
+            // url:"http://541331e14b.51vip.biz:2005/arcgis/rest/services/ThePoliceStationInHarbinCitymap/MapServer/0",
+        });
+
+        //发布多选图层的控件
+        const overlays = {
+            "Harbin City": statesCity,
+            "Harbin County": statesCounty,
+            "Point coordinates in local police stations": statesPoint,
+        };
+
+        var map = L.map('ArcGISmapContainer', {
+            layers: [statesCity,statesCounty, statesPoint]//默认打开的图层
+        }).setView([45.6, 126], 7)//([32.180188, 118.697804], 16);
+
+        const apiKey = "AAPKec5e7aae3d6241c9b83417e4a1f8ee21EMkj1hcFCF2_9p3hi6MN_k5jkiq_fzMv_hLfpU85MGFJEp7sHV-ODgWcnD-YM43n";
+
+        var vectorTiles = {};
+        var allEnums = [
+            'ArcGIS:Imagery',
+            'ArcGIS:Imagery:Standard',
+            'ArcGIS:Imagery:Labels',
+            'ArcGIS:LightGray',
+            'ArcGIS:LightGray:Base',
+            'ArcGIS:LightGray:Labels',
+            'ArcGIS:DarkGray',
+            'ArcGIS:DarkGray:Base',
+            'ArcGIS:DarkGray:Labels',
+            'ArcGIS:Navigation',
+            'ArcGIS:NavigationNight',
+            'ArcGIS:Streets',
+            'ArcGIS:StreetsNight',
+            'ArcGIS:StreetsRelief',
+            'ArcGIS:StreetsRelief:Base',
+            'ArcGIS:Topographic',
+            'ArcGIS:Topographic:Base',
+            'ArcGIS:Oceans',
+            'ArcGIS:Oceans:Base',
+            'ArcGIS:Oceans:Labels',
+            'OSM:Standard',
+            'OSM:StandardRelief',
+            'OSM:StandardRelief:Base',
+            'OSM:Streets',
+            'OSM:StreetsRelief',
+            'OSM:StreetsRelief:Base',
+            'OSM:LightGray',
+            'OSM:LightGray:Base',
+            'OSM:LightGray:Labels',
+            'OSM:DarkGray',
+            'OSM-DarkGray:Base',
+            'OSM-DarkGray:Labels',
+            'ArcGIS:Terrain',
+            'ArcGIS:Terrain:Base',
+            'ArcGIS:Terrain:Detail',
+            'ArcGIS:Community',
+            'ArcGIS:ChartedTerritory',
+            'ArcGIS:ChartedTerritory:Base',
+            'ArcGIS:ColoredPencil',
+            'ArcGIS:Nova',
+            'ArcGIS:ModernAntique',
+            'ArcGIS:ModernAntique:Base',
+            'ArcGIS:Midcentury',
+            'ArcGIS:Newspaper',
+            'ArcGIS:Hillshade:Light',
+            'ArcGIS:Hillshade:Dark'
+        ];
+
+        // the L.esri.Vector.vectorBasemapLayer basemap enum defaults to 'ArcGIS:Streets' if omitted
+        //遍历添加多种图层
+        vectorTiles.Default = L.esri.Vector.vectorBasemapLayer(null, {
+            apiKey
+        });
+        allEnums.forEach((enumString) => {
+            vectorTiles[
+                enumString
+            ] = L.esri.Vector.vectorBasemapLayer(enumString, {
+                apiKey
+            });
+        });
+
+        //选择图层控件添加
+        L.control
+            .layers(vectorTiles, overlays, {  //(单选图层，多选图层（顺序不能变）{
+                collapsed: true, //是否折叠
+                position: 'bottomright',
+            })
+            .addTo(map);
+
+        vectorTiles.Default.addTo(map);//默认打开图层
+
+        // add Leaflet-Geoman controls with some options to the map
+        map.pm.addControls({
+            position: 'bottomleft',//（'topleft''topright''bottomleft''bottomright'）
+            drawCircle: true,
+        });
+        // add Leaflet-Geoman controls with some options to the map
+        L.control.mousePosition().addTo(map);   //移动鼠标动态获得经纬度
+
+        //=======================地点搜索框
+        const searchControl = L.esri.Geocoding.geosearch({
+            position: "topright",
+            placeholder: "Enter an address or place e.g. 1 York St",
+            useMapBounds: false,
+            providers: [
+                L.esri.Geocoding.arcgisOnlineProvider({
+                    apikey: apiKey,
+                    nearby: {
+                        lat: -33.8688,
+                        lng: 151.2093
+                    }
+                })
+            ]
+        }).addTo(map);
+
+        const results = L.layerGroup().addTo(map);
+
+        searchControl.on("results", (data) => {
+            results.clearLayers();
+            for (let i = data.results.length - 1; i >= 0; i--) {
+                const lngLatString = `${Math.round(data.results[i].latlng.lng * 100000) / 100000}, ${Math.round(data.results[i].latlng.lat * 100000) / 100000
+                    }`;
+                const marker = L.marker(data.results[i].latlng);
+                marker.bindPopup(`<b>${lngLatString}</b><p>${data.results[i].properties.LongLabel}</p>`);
+                results.addLayer(marker);
+                marker.openPopup();
+            }
+        });
+        //=============================
+
+        //===================气泡弹窗
+        // Add the Feature Layer to the map
+        // Setup the Popup
+        statesCity.bindPopup(function (layer) {
+            return L.Util.template("<b>{NAME}</b>", layer.feature.properties);//英文字段名才能识别显示
+        });
+        statesCounty.bindPopup(function (layer) {
+            return L.Util.template("<b>{NAME}</b>", layer.feature.properties);
+        });
+        
+          statesPoint.bindPopup(function (layer) {
+            return L.Util.template("<b>区县：</b><br>{district_}</br><b>派出所名称：</b><br>{station_na}</br><b>地址：</b><br>{address}</br><b>联系电话：</b><br>{ContactNum}</br>", layer.feature.properties);
+          });
+
+        //==============创建5、10、15分钟可到达的服务区
+        // Layer Group for source point
+        const startLayerGroup = L.layerGroup().addTo(map);
+
+        // Layer Group for service area results
+        const layerGroup = L.layerGroup().addTo(map);//const
+
+        // Create the arcgis-rest-js authentication object to use later.
+        const authentication = arcgisRest.ApiKeyManager.fromKey(apiKey);
+
+        // When the map is clicked, call the service area REST service with the
+        // clicked point and display the results.
+        document.getElementById("ServerArea-btn").value = "OpenServerArea";
+        function ServerArea() {//点击按钮触发最短路径开关
+            if (document.getElementById("ServerArea-btn").value == "OpenServerArea") {
+                document.getElementById("ServerArea-btn").value = "CloseServerArea";
+
+                map.on("contextmenu", (e) => {
+                    // Clear the previous results
+                    startLayerGroup.clearLayers();
+                    layerGroup.clearLayers();
+
+                    // Add the source point
+                    L.marker(e.latlng).addTo(startLayerGroup);
+
+                    // Make the API request
+                    arcgisRest
+                        .serviceArea({
+                            endpoint: "https://route-api.arcgis.com/arcgis/rest/services/World/ServiceAreas/NAServer/ServiceArea_World/solveServiceArea",
+                            authentication,
+                            facilities: [[e.latlng.lng, e.latlng.lat]]
+                        })
+                        .then((response) => {
+                            // Show the result route on the map.
+                            L.geoJSON(response.saPolygons.geoJson, {
+                                style: (feature) => {
+                                    const style = {
+                                        fillOpacity: 0.5,
+                                        weight: 1
+                                    };
+                                    if (feature.properties.FromBreak === 0) {
+                                        style.color = "hsl(210, 80%, 40%)";
+                                    } else if (feature.properties.FromBreak === 5) {
+                                        style.color = "hsl(210, 80%, 60%)";
+                                    } else {
+                                        style.color = "hsl(210, 80%, 80%)";
+                                    }
+                                    return style;
+                                }
+                            }).addTo(layerGroup);
+                        })
+                        .catch((error) => {
+                            console.error(error);
+                            alert("There was a problem using the route service. See the console for details.");
+                        });
+                });
+            }
+            else if (document.getElementById("ServerArea-btn").value == "CloseServerArea") {
+                document.getElementById("ServerArea-btn").value = "OpenServerArea";
+                // feature.properties.FromBreak="l";
+                // Clear the previous results
+                startLayerGroup.clearLayers();
+                layerGroup.clearLayers();
+                map.off("contextmenu");//移除右击事件
+
+            }
+        };
+
+        //=====================最短路径
+        // Add a DOM Node to display the text routing directions
+        const directions = document.createElement("div");
+        directions.id = "directions";
+        directions.innerHTML = "Click on the map to create a start and end for the route.";
+        document.body.appendChild(directions);
+
+        // Layer Group for start/end-points
+        const startPathLayerGroup = L.layerGroup().addTo(map);
+        const endLayerGroup = L.layerGroup().addTo(map);
+
+        // Layer Group for route lines
+        const routeLines = L.layerGroup().addTo(map);
+
+        let currentStep = "start";
+        let startCoords, endCoords;
+
+        function updateRoute() {
+            // Create the arcgis-rest-js authentication object to use later.
+            const authentication = arcgisRest.ApiKeyManager.fromKey(apiKey);
+
+            // make the API request
+            arcgisRest
+                .solveRoute({
+                    stops: [startCoords, endCoords],
+                    endpoint: "https://route-api.arcgis.com/arcgis/rest/services/World/Route/NAServer/Route_World/solve",
+                    authentication
+                })
+                .then((response) => {
+                    // Show the result route on the map.
+                    routeLines.clearLayers();
+                    L.geoJSON(response.routes.geoJson).addTo(routeLines);
+
+                    // Show the result text directions on the map.
+                    const directionsHTML = response.directions[0].features.map((f) => f.attributes.text).join("<br/>");
+                    directions.innerHTML = directionsHTML;
+                    startCoords = null;
+                    endCoords = null;
+                })
+                .catch((error) => {
+                    console.error(error);
+                    alert("There was a problem using the route service. See the console for details.");
+                });
+        }
+
+       // state, and pass them to the updateRoute function which calls the REST endpoint.
+        document.getElementById("Path-btn").value = "OpenRoute";//设置路劲按钮的值
+        function SearchRoutePath() {//点击按钮触发最短路径开关
+            if (document.getElementById("Path-btn").value == "OpenRoute") {
+                document.getElementById("Path-btn").value = "CloseRoute";
+
+                directions.innerHTML = "Click on the map to create a start and end for the route.";
+                // When the map is clicked, get the coordinates, store the start or end
+                map.on("click", (e) => {
+                    const coordinates = [e.latlng.lng, e.latlng.lat];
+
+                    if (currentStep === "start") {
+                        startPathLayerGroup.clearLayers();
+                        endLayerGroup.clearLayers();
+                        routeLines.clearLayers();
+                        L.marker(e.latlng).addTo(startPathLayerGroup);
+                        startCoords = coordinates;
+                        currentStep = "end";
+                    } else if (currentStep === "end") {
+                        L.marker(e.latlng).addTo(endLayerGroup);
+                        endCoords = coordinates;
+                        currentStep = "start";
+                    }
+
+                    if (startCoords && endCoords) {
+                        updateRoute();
+                    }
+                });
+
+            }
+            else if (document.getElementById("Path-btn").value == "CloseRoute") {
+                document.getElementById("Path-btn").value = "OpenRoute";
+                directions.innerHTML = "Close start and end for the route.";
+                // currentStep = "stop";//停止标记开始和结束点的计数
+                // //清除路劲图层和标点
+                startPathLayerGroup.clearLayers();
+                endLayerGroup.clearLayers();
+                routeLines.clearLayers();
+                map.off("click");//移除单击事件
+            }
+        };
+
+    </script>
+
+    <!-- ==Echarts== -->
+    <script src="https://fastly.jsdelivr.net/npm/echarts@5.3.2/dist/echarts.min.js"></script>
+    <!-- <script src="js/Echarts.js">    //Echarts图表JS文件 </script>-->
+    <script src="js/Echarts_footer.js">    //Echarts动态文字JS文件</script>
+
+</body>
+
+</html>
